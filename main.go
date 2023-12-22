@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -62,14 +63,22 @@ func WriteError(err error, w http.ResponseWriter) bool {
 }
 
 func getClientIPAddr(req *http.Request) net.IP {
+	log.Printf("%v", req.Header)
 	// Check if X-Forwarded-For header exists
-	clientIP := req.Header.Get("X-Forwarded-For")
+	clientIP := req.Header.Get("X-Real-Ip")
 	if clientIP != "" {
 		// Extract the first IP address from the comma-separated list
 		clientIP = strings.Split(clientIP, ":")[0]
 	} else {
-		// If X-Forwarded-For is empty, fall back to RemoteAddr
-		clientIP = strings.Split(req.RemoteAddr, ":")[0]
+		clientIP = req.Header.Get("X-Forwarded-For")
+		if clientIP != "" {
+			// If X-Forwarded-For is empty, fall back to RemoteAddr
+			clientIP = strings.Split(req.RemoteAddr, ":")[0]
+		} else {
+			// Extract the first IP address from the comma-separated list
+			clientIP = strings.Split(clientIP, ":")[0]
+		}
+
 	}
 	return net.ParseIP(clientIP)
 }
