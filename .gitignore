@@ -1,3 +1,4 @@
 .env
 GeoIP
 go.sum
+docker-compose.yml
